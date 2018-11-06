@@ -5,7 +5,7 @@ with open('readme.md', 'r') as fh:
 
 setuptools.setup(
     name="pygtt",
-    version="1.1.0",
+    version="1.1.1",
     author="Eliseo Martelli",
     author_email="me@eliseomartelli.it",
     description="A python package to get GTT transit info",

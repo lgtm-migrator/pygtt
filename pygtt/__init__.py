@@ -20,13 +20,14 @@ class PyGTT():
                 if column.findAll('a'):
                     bus['bus_name'] = column.find('a').text
                 else:
-                    run = column.text
-                    if '*' not in column.text:
-                        time['isRealtime'] = 'false'
-                    else:
-                        time['isRealtime'] = 'true'
-                        run = column.text.replace('*', '')
-                    time['run'] = run
-                    bus['time'].append(time)
+                    if column.text:
+                        run = column.text
+                        if '*' not in column.text:
+                            time['isRealtime'] = 'false'
+                        else:
+                            time['isRealtime'] = 'true'
+                            run = column.text.replace('*', '')
+                        time['run'] = run
+                        bus['time'].append(time)
             bus_list.append(bus)
         return bus_list

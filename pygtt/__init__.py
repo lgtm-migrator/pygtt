@@ -11,11 +11,9 @@ class PyGTT():
         soup = BeautifulSoup(r.text, 'html.parser')
         main_table = soup.findAll('table')[0]
         for row in main_table.findAll('tr'):
-            print(row)
             bus = {}
             bus['time'] = []
             for column in row.findAll('td'):
-                print(column)
                 time = {}
                 if column.findAll('a'):
                     bus['bus_name'] = column.find('a').text

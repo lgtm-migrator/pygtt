@@ -1,9 +1,9 @@
 import aiohttp
 from .consts import BASE_URL
-from .models import Stop, Bus
+from .models import Stop, Bus, BusTime
 import async_timeout
 from bs4 import BeautifulSoup
-
+from datetime import datetime, timedelta
 
 class PyGTT():
 
@@ -13,7 +13,7 @@ class PyGTT():
         session: aiohttp.ClientSession = None,
         request_timeout: int = 8,
     ) -> "PyGTT":
-        self._stop = Stop(stop_name, None)
+        self._stop = Stop(stop_name)
         self._session = session
         self._close_session = False
         self._request_timeout = request_timeout
@@ -38,33 +38,42 @@ class PyGTT():
         return (await response.text())
 
 
-    async def _parse_data(self, data):
+    def _parse_data(self, data):
         """Parse the data from PyGTT."""
-        with BeautifulSoup(r.text, 'html.parser') as soup:
-            time_table = soup.findAll('table')[0]
-
-            for row in main_table.findAll('tr'): # Get the rows in the time table.
-                # Every row represents a bus at the stop.
-                for column in row.findAll('td'):
-                    time = {}
-                    if column.findAll('a'):
-                        bus.name = column.find('a').text
-                    else:
-                        if column.text:
-                            run = column.text
-                            if '*' not in column.text:
-                                time['isRealtime'] = 'false'
-                            else:
-                                time['isRealtime'] = 'true'
-                                run = column.text.replace('*', '')
-                            time['run'] = run
-                            bus['time'].append(time)
-                bus_list.append(bus)
-            return bus_list
+        soup = BeautifulSoup(data, 'html.parser')
+        time_table = soup.findAll('table')[0]
+        self._stop.bus_list = []
+        for row in time_table.findAll('tr'): # Get the rows in the time table.
+            # Every row represents a bus at the stop.
+            bus = None
+            for column in row.findAll('td'):
+                if column.findAll('a'):
+                    bus = Bus(column.find('a').text)
+                else:
+                    time_str = column.text
+                    time = datetime.strptime(
+                        time_str.replace("*", ""), 
+                        "%H:%M"
+                    )
+                    time = time.replace(
+                        year = datetime.now().year,
+                        month = datetime.now().month,
+                        day = datetime.now().day,
+                    )
+                    if time <= datetime.now():
+                        time = time + timedelta(days=1)
+                    bus.time.append(
+                        BusTime(
+                            time,
+                            "*" in time_str
+                        )
+                    )
+            self._stop.bus_list.append(bus)
+        return self._stop
 
     async def get_state(self):
         """Get the state of the stop."""
-        await self._request()
+        self._stop = self._parse_data(await self._request())
         return self._stop
 
     async def close(self) -> None:

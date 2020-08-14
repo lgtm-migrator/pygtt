@@ -25,7 +25,7 @@ dev:				## Creates the dev environment.
 
 .PHONY: test
 test:				## Tests the project.
-	pytest tests/ --cov=pygtt/;
+	pytest tests/ --cov=pygtt/ --cov-report term-missing;
 
 .PHONY: install
 install: 			## Installs the package to the active Python's site-packages.

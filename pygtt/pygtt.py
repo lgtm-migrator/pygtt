@@ -34,7 +34,7 @@ class PyGTT:
                     "GET", BASE_URL.format(self._stop.name),
                 )
                 response.raise_for_status()
-        except asyncio.TimeoutError as exception:  # TODO: Handle exceptions
+        except asyncio.TimeoutError as exception:
             raise PyGTTConnectionError(
                 "Timeout occurred while connecting to GTT."
             ) from exception
@@ -59,7 +59,9 @@ class PyGTT:
                     bus = Bus(column.find("a").text)
                     bus.time.clear()
                 else:
-                    time = datetime.strptime(column.text.replace("*", ""), "%H:%M")
+                    time = datetime.strptime(
+                        column.text.replace("*", "").strip(), "%H:%M"
+                    )
                     time = time.replace(
                         year=datetime.now().year,
                         month=datetime.now().month,

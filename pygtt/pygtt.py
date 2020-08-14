@@ -1,9 +1,11 @@
 import aiohttp
+import asyncio
 from .consts import BASE_URL
 from .models import Stop, Bus, BusTime
+from .exceptions import PyGTTConnectionError
 import async_timeout
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 import copy
 
 
@@ -32,8 +34,14 @@ class PyGTT:
                     "GET", BASE_URL.format(self._stop.name),
                 )
                 response.raise_for_status()
-        except Exception:  # TODO: Handle exceptions
-            raise Exception()
+        except asyncio.TimeoutError as exception:  # TODO: Handle exceptions
+            raise PyGTTConnectionError(
+                "Timeout occurred while connecting to GTT."
+            ) from exception
+        except (aiohttp.ClientError, aiohttp.ClientResponseError) as exception:
+            raise PyGTTConnectionError(
+                "Error occurred while connecting to GTT."
+            ) from exception
 
         return await response.text()
 
@@ -57,7 +65,10 @@ class PyGTT:
                         month=datetime.now().month,
                         day=datetime.now().day,
                     )
-                    # TODO: Handle next day hour.
+
+                    if time <= (datetime.now() + timedelta(minutes=1)):
+                        time = time + timedelta(days=1)
+
                     bus.time.append(BusTime(time, "*" in column.text))
             self._stop.bus_list.append(copy.deepcopy(bus))
         return self._stop

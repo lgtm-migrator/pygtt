@@ -5,6 +5,7 @@ import datetime
 import attr
 from typing import List
 
+
 @attr.s(auto_attribs=True, frozen=True)
 class BusTime:
     """BusTime object for pygtt."""
@@ -15,6 +16,7 @@ class BusTime:
     def __lt__(self, other):
         """Compare two BusTime objects."""
         return self.time < other.time
+
 
 @attr.s(auto_attribs=True, frozen=False)
 class Bus:
@@ -41,7 +43,7 @@ class Stop:
 
     name: str
     bus_list: List[Bus] = []
-    
+
     @property
     def next(self):
         """Next bus to stop."""

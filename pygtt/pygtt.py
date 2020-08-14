@@ -3,10 +3,10 @@ from .consts import BASE_URL
 from .models import Stop, Bus, BusTime
 import async_timeout
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+from datetime import datetime
 
-class PyGTT():
 
+class PyGTT:
     def __init__(
         self,
         stop_name: str,
@@ -28,46 +28,35 @@ class PyGTT():
         try:
             with async_timeout.timeout(self._request_timeout):
                 response = await self._session.request(
-                    "GET",
-                    BASE_URL.format(self._stop.name),
+                    "GET", BASE_URL.format(self._stop.name),
                 )
                 response.raise_for_status()
-        except Exception: # TODO: Handle exceptions
+        except Exception:  # TODO: Handle exceptions
             raise Exception()
 
-        return (await response.text())
-
+        return await response.text()
 
     def _parse_data(self, data):
         """Parse the data from PyGTT."""
-        soup = BeautifulSoup(data, 'html.parser')
-        time_table = soup.findAll('table')[0]
-        self._stop.bus_list = []
-        for row in time_table.findAll('tr'): # Get the rows in the time table.
-            # Every row represents a bus at the stop.
-            bus = None
-            for column in row.findAll('td'):
-                if column.findAll('a'):
-                    bus = Bus(column.find('a').text)
+        self._stop.bus_list.clear()
+
+        soup = BeautifulSoup(data, "html.parser")
+        time_table = soup.findAll("table")[0]
+
+        for row in time_table.findAll("tr"):
+
+            for column in row.findAll("td"):
+                if column.findAll("a"):
+                    bus = Bus(column.find("a").text)
                 else:
-                    time_str = column.text
-                    time = datetime.strptime(
-                        time_str.replace("*", ""), 
-                        "%H:%M"
-                    )
+                    time = datetime.strptime(column.text.replace("*", ""), "%H:%M")
                     time = time.replace(
-                        year = datetime.now().year,
-                        month = datetime.now().month,
-                        day = datetime.now().day,
+                        year=datetime.now().year,
+                        month=datetime.now().month,
+                        day=datetime.now().day,
                     )
-                    if time <= datetime.now():
-                        time = time + timedelta(days=1)
-                    bus.time.append(
-                        BusTime(
-                            time,
-                            "*" in time_str
-                        )
-                    )
+                    # TODO: Handle next day hour.
+                    bus.time.append(BusTime(time, "*" in column.text))
             self._stop.bus_list.append(bus)
         return self._stop
 

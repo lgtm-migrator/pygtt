@@ -1,6 +1,6 @@
 import setuptools
 
-with open('readme.md', 'r') as fh:
+with open("readme.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     url="https://github.com/eliseomartelli/pygtt",
     packages=setuptools.find_packages(),
-    install_requires=list(val.strip() for val in open('requirements.txt')),
+    install_requires=list(val.strip() for val in open("requirements.txt")),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -31,3 +31,12 @@ test:				## Tests the project.
 install: 			## Installs the package to the active Python's site-packages.
 	pip install -Ur requirements.txt; \
 	pip install -e .;
+
+.PHONY: build
+build:				## Builds the package
+	rm -rf dist/
+	python3 setup.py sdist
+
+.PHONY: release		## Releases the package
+release:
+	twine upload dist/*

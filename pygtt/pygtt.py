@@ -4,6 +4,7 @@ from .models import Stop, Bus, BusTime
 import async_timeout
 from bs4 import BeautifulSoup
 from datetime import datetime
+import copy
 
 
 class PyGTT:
@@ -48,6 +49,7 @@ class PyGTT:
             for column in row.findAll("td"):
                 if column.findAll("a"):
                     bus = Bus(column.find("a").text)
+                    bus.time.clear()
                 else:
                     time = datetime.strptime(column.text.replace("*", ""), "%H:%M")
                     time = time.replace(
@@ -57,7 +59,7 @@ class PyGTT:
                     )
                     # TODO: Handle next day hour.
                     bus.time.append(BusTime(time, "*" in column.text))
-            self._stop.bus_list.append(bus)
+            self._stop.bus_list.append(copy.deepcopy(bus))
         return self._stop
 
     async def get_state(self):

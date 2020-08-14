@@ -19,3 +19,26 @@ def test_stop_next():
     )
     assert stop.next.name == "2"
     assert stop.next.first_time == datetime.fromtimestamp(1234)
+
+
+def test_stop_append():
+    stop = Stop("1234")
+    stop.bus_list.clear()
+
+    bus = Bus("1")
+    bus.time.append(datetime.fromtimestamp(1237))
+    bus.time.append(datetime.fromtimestamp(1236))
+    stop.bus_list.append(bus)
+
+    bus = None
+    bus = Bus("2")
+    bus.time.append(datetime.fromtimestamp(1235))
+    bus.time.append(datetime.fromtimestamp(1234))
+    stop.bus_list.append(bus)
+
+    assert len(stop.bus_list[0].time) == 2
+    assert len(stop.bus_list[1].time) == 2
+
+
+if __name__ == "__main__":
+    test_stop_append()
